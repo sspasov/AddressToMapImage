@@ -1,4 +1,4 @@
-package com.sspasov.addresstomapimage;
+package com.sspasov.addresstomapimage.dialogs;
 
 
 import java.awt.BorderLayout;
@@ -14,12 +14,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
+import com.sspasov.addresstomapimage.utils.C;
+
 public class AboutDialog extends JDialog {
 	private static final long serialVersionUID = 4441502322395765067L;
 	
 	private final JPanel contentPanel;
 
-	public AboutDialog(String VERSION) {
+	public AboutDialog() {
 		setResizable(false);
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -32,7 +34,7 @@ public class AboutDialog extends JDialog {
 		contentPanel.setLayout(null);
 		
 		JTextPane textPane = new JTextPane();
-		textPane.setText("Address To Map ver. " + VERSION + "\r\n\r\nРазработили: Здравко Атанасов, Радослав Йонов, Станимир Спасов.\r\n\r\nПрограмата е курсова работа по Програмни среди в ТУ София - филиал Пловдив.\r\n\r\nПловдив, 2014г.");
+		textPane.setText("Address To Map ver. " + C.APP_VERSION + "\r\n\r\nРазработили: Здравко Атанасов, Радослав Йонов, Станимир Спасов.\r\n\r\nПрограмата е курсова работа по Програмни среди в ТУ София - филиал Пловдив.\r\n\r\nПловдив, 2014г.");
 		textPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.DARK_GRAY), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		textPane.setBounds(10, 11, 424, 145);
 		contentPanel.add(textPane);

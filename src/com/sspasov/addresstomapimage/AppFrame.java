@@ -22,169 +22,177 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultEditorKit;
 
+import com.sspasov.addresstomapimage.dialogs.AboutDialog;
+import com.sspasov.addresstomapimage.dialogs.SaveDialog;
+import com.sspasov.addresstomapimage.models.ImageImplement;
+import com.sspasov.addresstomapimage.models.StaticMap;
+import com.sspasov.addresstomapimage.utils.C;
+
 public class AppFrame extends JFrame {
+	// -----------------------------------------------------------------------------------------
+	// Constants
+	// -----------------------------------------------------------------------------------------
 	private static final long serialVersionUID = 3754135940022783903L;
 
-	private final String VERSION = "0.9";
-	private JPanel contentPane;
-	private JTextField textField;
-	private JLabel mapImage;
-	private JRootPane rootPane;
-	private String textFieldInput;
-	private StaticMap map;
-	private JComboBox mapType;
-	private ImageImplement image;
-	private String[] typesOfMaps = { "roadmap", "satellite", "terrain", "hybrid" };
+	// -----------------------------------------------------------------------------------------
+	// Fields
+	// -----------------------------------------------------------------------------------------
+	private JPanel mContentPane;
+	private JTextField mTextFieldAddress;
+	private JLabel mMapImage;
+	private JRootPane mRootPane;
+	private String mAddress;
+	private StaticMap mMap;
+	private JComboBox mComboBoxMapTypes;
+	private ImageImplement mImage;
 
+	// -----------------------------------------------------------------------------------------
+	// Constructors
+	// -----------------------------------------------------------------------------------------
 	public AppFrame() {
-		setFrameTitle("Address To Google Map");
+		setFrameTitle(C.APP_FRAME_TITLE);
 
 		setMenuBar();
 
-		map = new StaticMap();
+		mMap = new StaticMap();
 
 		setLayout();
 	}
 
-	private void setLayout() {
-		rootPane = getRootPane();
-
-		contentPane = new JPanel();
-		contentPane.setLayout(null);
-
-		JLabel lblEnterAddress = new JLabel("Enter Address:");
-		lblEnterAddress.setBounds(15, 10, 125, 25);
-		lblEnterAddress.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		contentPane.add(lblEnterAddress);
-
-		textField = new JTextField();
-		textField.setBounds(130, 10, 640, 25);
-		textField.setToolTipText("Enter the address here.");
-		textField.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		textField.setColumns(10);
-		contentPane.add(textField);
-
-		JButton btnGetMap = new JButton("  Get map");
-		btnGetMap.setBounds(785, 10, 125, 25);
-		btnGetMap.setToolTipText("Press to search for a map");
-		btnGetMap.setIcon(new ImageIcon(AppFrame.class.getResource("/img/search.png")));
-		btnGetMap.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		rootPane.setDefaultButton(btnGetMap);
-
-		// mapImage = new JLabel();
-		// contentPane.add(mapImage);
-		// mapImage.setBounds(125, 80, 640, 640);
-		image = new ImageImplement();
-		contentPane.add(image);
-
-		btnGetMap.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				textFieldInput = textField.getText();
-				// System.out.println(textFieldInput);
-
-				if (textFieldInput.isEmpty() == true) {
-					image.setImage(new ImageIcon(AppFrame.class.getResource("/noImage.png")).getImage());
-					System.out.println("in NOIMAGE");
-					// mapImage.setIcon(new
-					// ImageIcon(AppFrame.class.getResource("/noImage.png")));
-					// mapImage.setVisible(true);
-					repaint();
-				} else {
-					map.setAddress(textFieldInput);
-					try {
-						mapImage.setIcon(new ImageIcon(map.getImage()));
-						mapImage.setVisible(true);
-						repaint();
-					} catch (IOException e1) {
-						System.out.println(e1.getMessage());
-					}
-				}
-			}
-		});
-		contentPane.add(btnGetMap);
-
-		mapType = new JComboBox(typesOfMaps);
-		mapType.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				JComboBox cb = (JComboBox) event.getSource();
-				map.setMapType((String) cb.getSelectedItem());
-			}
-		});
-		mapType.setSelectedIndex(0);
-		mapType.setToolTipText("Select map type.");
-		mapType.setBounds(785, 46, 125, 25);
-		contentPane.add(mapType);
-
-		setContentPane(contentPane);
+	// -----------------------------------------------------------------------------------------
+	// Private methods
+	// -----------------------------------------------------------------------------------------
+	private void setFrameTitle(String title) {
+		setTitle(title);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 936, 626);
 	}
+
+	
 
 	private void setMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
+		Font font = new Font(C.APP_MENU_FONT_TYPE, Font.PLAIN, C.APP_MENU_FONT_SIZE);
 
-		/* FILE */
-		JMenu mnFile = new JMenu("File");
-		mnFile.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		menuBar.add(mnFile);
+		setMenuFile(menuBar, font);
 
-		/* FILE->SAVE */
-		menuFileSave(mnFile);
+		setMenuEdit(menuBar, font);
 
-		/* FILE->EXIT */
-		menuFileExit(mnFile);
-
-		/* EDIT */
-		JMenu mnEdit = new JMenu("Edit");
-		mnEdit.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		menuBar.add(mnEdit);
-
-		/* EDIT->CUT */
-		menuEditCut(mnEdit);
-
-		/* EDIT->COPY */
-		menuEditCopy(mnEdit);
-
-		/* EDIT->PASTE */
-		menuEditPaste(mnEdit);
-
-		/* EDIT->DELETE */
-		menuEditDelete(mnEdit);
-
-		/* HELP */
-		JMenu mnHelp = new JMenu("Help");
-		mnHelp.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		menuBar.add(mnHelp);
-
-		/* HELP->HELP */
-		menuHelpHelp(mnHelp);
-
-		/* HELP->ABOUT */
-		menuHelpAbout(mnHelp);
+		setMenuHelp(menuBar, font);
 
 		setJMenuBar(menuBar);
 	}
 
-	private void menuHelpAbout(JMenu mnHelp) {
-		JMenuItem mntmAbout = new JMenuItem("About");
-		mntmAbout.addActionListener(new ActionListener() {
+	private JMenuItem createMenuItem(String title, String tooltip, Font font, String iconPath) {
+		JMenuItem menuItem = new JMenuItem();
+		menuItem.setText(title);
+		if (tooltip != null) {
+			menuItem.setToolTipText(tooltip);
+		}
+		menuItem.setHorizontalAlignment(SwingConstants.LEFT);
+		menuItem.setFont(font);
+		menuItem.setIcon(new ImageIcon(AppFrame.class.getResource(iconPath)));
+
+		return menuItem;
+	}
+
+	private void setMenuFile(JMenuBar menuBar, Font font) {
+		/* FILE */
+		JMenu menuFile = new JMenu(C.APP_MENU_FILE_TITLE);
+		menuFile.setFont(font);
+		menuBar.add(menuFile);
+
+		JMenuItem menuItem;
+		/* FILE->SAVE */
+		menuItem = createMenuItem(C.APP_MENU_FILE_SAVE_TITLE, C.APP_MENU_FILE_SAVE_TOOLTIP, font,
+				C.APP_MENU_FILE_SAVE_ICON);
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				AboutDialog aboutDialog = new AboutDialog(VERSION);
+				SaveDialog saveDialog = new SaveDialog();
+				try {
+					saveDialog.saveImage(mMap.getImage());
+				} catch (IOException e) {
+					System.out.println(e.getMessage());
+				}
+			}
+		});
+		menuFile.add(menuItem);
+
+		/* FILE->EXIT */
+		menuItem = createMenuItem(C.APP_MENU_FILE_EXIT_TITLE, C.APP_MENU_FILE_EXIT_TOOLTIP, font,
+				C.APP_MENU_FILE_EXIT_ICON);
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				System.exit(0);
+			}
+		});
+		menuFile.add(menuItem);
+	}
+
+	private void setMenuEdit(JMenuBar menuBar, Font font) {
+		/* EDIT */
+		JMenu menuEdit = new JMenu("Edit");
+		menuEdit.setFont(font);
+		menuBar.add(menuEdit);
+
+		/* EDIT->CUT */
+		JMenuItem menuItem;
+		menuItem = createMenuItem(C.APP_MENU_EDIT_CUT_TITLE, C.APP_MENU_EDIT_CUT_TOOLTIP, font,
+				C.APP_MENU_EDIT_CUT_ICON);
+		menuItem.setAction(new DefaultEditorKit.CutAction());
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK));
+		menuEdit.add(menuItem);
+
+		/* EDIT->COPY */
+		menuItem = createMenuItem(C.APP_MENU_EDIT_COPY_TITLE, C.APP_MENU_EDIT_COPY_TOOLTIP, font,
+				C.APP_MENU_EDIT_COPY_ICON);
+		menuItem.setAction(new DefaultEditorKit.CopyAction());
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK));
+		menuEdit.add(menuItem);
+
+		/* EDIT->PASTE */
+		menuItem = createMenuItem(C.APP_MENU_EDIT_PASTE_TITLE, C.APP_MENU_EDIT_PASTE_TOOLTIP, font, C.APP_MENU_EDIT_PASTE_ICON);
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK));
+		menuItem.setAction(new DefaultEditorKit.PasteAction());
+		menuEdit.add(menuItem);
+
+		/* EDIT->DELETE */
+		menuItem = createMenuItem(C.APP_MENU_EDIT_DELETE_TITLE, C.APP_MENU_EDIT_DELETE_TOOLTIP, font, C.APP_MENU_EDIT_DELETE_ICON);
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				mTextFieldAddress.replaceSelection("");
+			}
+		});
+		menuEdit.add(menuItem);
+	}
+
+	private void setMenuHelp(JMenuBar menuBar, Font font) {
+		/* HELP */
+		JMenu menuHelp = new JMenu(C.APP_MENU_HELP_TITLE);
+		menuHelp.setFont(font);
+		menuBar.add(menuHelp);
+
+		/* HELP->HELP */
+		JMenuItem menuItem;
+		menuItem = createMenuItem(C.APP_MENU_HELP_HELP_TITLE, null, font, C.APP_MENU_HELP_HELP_ICON);
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+		menuHelp.add(menuItem);
+
+		/* HELP->ABOUT */
+		menuItem = createMenuItem(C.APP_MENU_HELP_ABOUT_TITLE, null, font, C.APP_MENU_HELP_ABOUT_ICON);
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				AboutDialog aboutDialog = new AboutDialog();
 				aboutDialog.setVisible(true);
 			}
 		});
-		mntmAbout.setIcon(new ImageIcon(AppFrame.class.getResource("/img/about.png")));
-		mntmAbout.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		mnHelp.add(mntmAbout);
-	}
-
-	private void menuHelpHelp(JMenu mnHelp) {
-		JMenuItem mntmHelp = new JMenuItem("Help");
-		mntmHelp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
-		mntmHelp.setIcon(new ImageIcon(AppFrame.class.getResource("/img/help.png")));
-		mntmHelp.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		mnHelp.add(mntmHelp);
+		menuHelp.add(menuItem);
 	}
 
 	private void menuEditDelete(JMenu mnEdit) {
@@ -193,7 +201,7 @@ public class AppFrame extends JFrame {
 		mntmDelete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				textField.replaceSelection("");
+				mTextFieldAddress.replaceSelection("");
 			}
 		});
 		mntmDelete.setIcon(new ImageIcon(AppFrame.class.getResource("/img/delete.png")));
@@ -203,7 +211,7 @@ public class AppFrame extends JFrame {
 	}
 
 	private void menuEditPaste(JMenu mnEdit) {
-		JMenuItem mntmPaste = new JMenuItem(new DefaultEditorKit.PasteAction());
+		JMenuItem mntmPaste = new JMenuItem();
 		mntmPaste.setText("Paste");
 		mntmPaste.setIcon(new ImageIcon(AppFrame.class.getResource("/img/paste.png")));
 		mntmPaste.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
@@ -211,65 +219,77 @@ public class AppFrame extends JFrame {
 		mnEdit.add(mntmPaste);
 	}
 
-	private void menuEditCopy(JMenu mnEdit) {
-		JMenuItem mntmCopy = new JMenuItem(new DefaultEditorKit.CopyAction());
-		mntmCopy.setText("Copy");
-		mntmCopy.setToolTipText("Copy selection to clipboard");
-		mntmCopy.setIcon(new ImageIcon(AppFrame.class.getResource("/img/copy.png")));
-		mntmCopy.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		mntmCopy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK));
-		mnEdit.add(mntmCopy);
-	}
+	private void setLayout() {
+		mRootPane = getRootPane();
 
-	private void menuEditCut(JMenu mnEdit) {
-		JMenuItem mntmCut = new JMenuItem(new DefaultEditorKit.CutAction());
-		mntmCut.setText("Cut");
-		mntmCut.setToolTipText("Cut selection to clipboard");
-		mntmCut.setIcon(new ImageIcon(AppFrame.class.getResource("/img/cut.png")));
-		mntmCut.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		mntmCut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK));
-		mnEdit.add(mntmCut);
-	}
+		mContentPane = new JPanel();
+		mContentPane.setLayout(null);
 
-	private void menuFileExit(JMenu mnFile) {
-		JMenuItem mntmExit = new JMenuItem("Exit");
-		mntmExit.setToolTipText("Exit application");
-		mntmExit.addActionListener(new ActionListener() {
+		JLabel lblEnterAddress = new JLabel("Enter Address:");
+		lblEnterAddress.setBounds(15, 10, 125, 25);
+		lblEnterAddress.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		mContentPane.add(lblEnterAddress);
+
+		mTextFieldAddress = new JTextField();
+		mTextFieldAddress.setBounds(130, 10, 640, 25);
+		mTextFieldAddress.setToolTipText("Enter the address here.");
+		mTextFieldAddress.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		mTextFieldAddress.setColumns(10);
+		mContentPane.add(mTextFieldAddress);
+
+		JButton btnGetMap = new JButton("  Get map");
+		btnGetMap.setBounds(785, 10, 125, 25);
+		btnGetMap.setToolTipText("Press to search for a map");
+		btnGetMap.setIcon(new ImageIcon(AppFrame.class.getResource("/img/search.png")));
+		btnGetMap.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		mRootPane.setDefaultButton(btnGetMap);
+
+		// mapImage = new JLabel();
+		// contentPane.add(mapImage);
+		// mapImage.setBounds(125, 80, 640, 640);
+		mImage = new ImageImplement();
+		mContentPane.add(mImage);
+
+		btnGetMap.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent event) {
-				System.exit(0);
-			}
-		});
-		mntmExit.setHorizontalAlignment(SwingConstants.LEFT);
-		mntmExit.setIcon(new ImageIcon(AppFrame.class.getResource("/img/exit.png")));
-		mntmExit.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		mnFile.add(mntmExit);
-	}
+			public void actionPerformed(ActionEvent e) {
+				mAddress = mTextFieldAddress.getText();
+				// System.out.println(textFieldInput);
 
-	private void menuFileSave(JMenu mnFile) {
-		JMenuItem mntmSave = new JMenuItem("Save");
-		mntmSave.setToolTipText("Save map");
-		mntmSave.setHorizontalAlignment(SwingConstants.LEFT);
-		mntmSave.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				SaveDialog saveDialog = new SaveDialog();
-				try {
-					saveDialog.saveImage(map.getImage());
-				} catch (IOException e) {
-					System.out.println(e.getMessage());
+				if (mAddress.isEmpty() == true) {
+					mImage.setImage(new ImageIcon(AppFrame.class.getResource("/noImage.png")).getImage());
+					System.out.println("in NOIMAGE");
+					// mapImage.setIcon(new
+					// ImageIcon(AppFrame.class.getResource("/noImage.png")));
+					// mapImage.setVisible(true);
+					repaint();
+				} else {
+					mMap.setAddress(mAddress);
+					try {
+						mMapImage.setIcon(new ImageIcon(mMap.getImage()));
+						mMapImage.setVisible(true);
+						repaint();
+					} catch (IOException e1) {
+						System.out.println(e1.getMessage());
+					}
 				}
 			}
 		});
-		mntmSave.setIcon(new ImageIcon(AppFrame.class.getResource("/img/save.png")));
-		mntmSave.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 12));
-		mntmSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
-		mnFile.add(mntmSave);
-	}
+		mContentPane.add(btnGetMap);
 
-	private void setFrameTitle(String title) {
-		setTitle(title);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 936, 626);
+		mComboBoxMapTypes = new JComboBox(C.MAP_TYPES);
+		mComboBoxMapTypes.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				JComboBox cb = (JComboBox) event.getSource();
+				mMap.setMapType((String) cb.getSelectedItem());
+			}
+		});
+		mComboBoxMapTypes.setSelectedIndex(0);
+		mComboBoxMapTypes.setToolTipText("Select map type.");
+		mComboBoxMapTypes.setBounds(785, 46, 125, 25);
+		mContentPane.add(mComboBoxMapTypes);
+
+		setContentPane(mContentPane);
 	}
 }

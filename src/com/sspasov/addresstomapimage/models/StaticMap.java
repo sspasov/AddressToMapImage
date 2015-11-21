@@ -1,4 +1,4 @@
-package com.sspasov.addresstomapimage;
+package com.sspasov.addresstomapimage.models;
 
 import java.awt.Image;
 import java.io.IOException;

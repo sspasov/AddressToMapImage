@@ -1,11 +1,13 @@
 package com.sspasov.addresstomapimage;
+
+import com.sspasov.addresstomapimage.utils.C;
+
 public class Main {
-	/*Launch the application.*/
+	/* Launch the application. */
 	public static void main(String[] args) {
-		AppFrame frame = new AppFrame();
-		frame.setResizable(true);
-		frame.setSize(936, 776);
-		frame.setVisible(true);
-				
+		AppFrame mFrame = new AppFrame();
+		mFrame.setResizable(true);
+		mFrame.setSize(C.APP_FRAME_WIDTH, C.APP_FRAME_HEIGHT);
+		mFrame.setVisible(true);
 	}
 }

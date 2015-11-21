@@ -1,4 +1,4 @@
-package com.sspasov.addresstomapimage;
+package com.sspasov.addresstomapimage.dialogs;
 
 import java.awt.Image;
 import java.awt.image.RenderedImage;
